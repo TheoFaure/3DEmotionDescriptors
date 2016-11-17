@@ -1,0 +1,15 @@
+cloud_grabber/*
+data_cara/
+histogram_gene/CMakeLists.txt~
+histogram_gene/VFH_features.cpp~
+histogram_gene/VFH_features_save_19.cpp
+histogram_gene/VFH_features_save_19.cpp~
+histogram_gene/build/
+pcd_viewer/
+preprocessing/CMakeLists.cpp~
+preprocessing/build/
+preprocessing/cat.pcd
+preprocessing/cat.pcd~
+preprocessing/passthrough.cpp~
+ref/
+
