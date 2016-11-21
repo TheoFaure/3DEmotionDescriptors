@@ -12,6 +12,8 @@
 #include <pcl/console/parse.h>
 #include <pcl/features/vfh.h>
 #include <pcl/visualization/histogram_visualizer.h>
+#include <iostream>
+#include <fstream>
 
 void compute_normals(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, pcl::PointCloud<pcl::Normal>::Ptr cloud_normals)
 {
@@ -52,17 +54,19 @@ void compute_VFH(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud,
   vfh.compute (*vfhs);
 }
 
-int
-main (int argc, char** argv)
+void create_histogram(int argc, char** argv)
 {
 //------------READ CLOUDS---------------
   pcl::PointCloud<pcl::PointXYZ>::Ptr cloudA (new pcl::PointCloud<pcl::PointXYZ>);
 
-  // Fill in the cloud data
-  pcl::PCDReader reader;
-
-  // Replace the path below with the path where you saved your file
-  reader.read (argv[1], *cloudA);
+  std::string type(argv[1]);
+  std::string file(argv[2]);
+  std::string file_name = ("../../data_cara/" + type + "/" + file + ".pcd").c_str();
+  if (pcl::io::loadPCDFile<pcl::PointXYZ> (file_name, *cloudA) == -1) //* load the file
+  {
+    PCL_ERROR ("Couldn't read file test_pcd.pcd \n");
+    return;
+  }
 
 //--------------CALCULATE THE NORMALS------------------
   pcl::PointCloud<pcl::Normal>::Ptr cloud_normalsA (new pcl::PointCloud<pcl::Normal>);
@@ -76,13 +80,23 @@ main (int argc, char** argv)
 
   pcl::VFHSignature308 descriptorA = vfhsA->points[0];
 
-	std::cout << descriptorA << std::endl; 	 
+  std::ofstream out_file;
+  std::string out_file_name = ("../../data_cara/" + type + "/" + file + "_histogram.txt").c_str();
+  out_file.open (("../../data_cara/" + type + "/" + file + "_histogram.txt").c_str());
+  out_file << descriptorA;
+  out_file.close();
 
 //------------------VISUALIZER---------------------------
 	// Plotter object.
-	pcl::visualization::PCLHistogramVisualizer viewer;
+  //pcl::visualization::PCLHistogramVisualizer viewer;
 	// We need to set the size of the descriptor beforehand.
-	viewer.addFeatureHistogram(*vfhsA, 308);
-	viewer.spin();
+	//viewer.addFeatureHistogram(*vfhsA, 308);
+	//viewer.spin();
+}
+
+int
+main (int argc, char** argv)
+{
+	create_histogram(argc, argv);
 	return 0;
 }

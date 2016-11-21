@@ -12,4 +12,6 @@ preprocessing/cat.pcd
 preprocessing/cat.pcd~
 preprocessing/passthrough.cpp~
 ref/
-
+classifier/CMakeLists.txt~
+classifier/build/
+classifier/classifier.cpp~
