@@ -5,6 +5,29 @@
 #include <pcl/io/pcd_io.h>
 #include "../common.hpp"
 
+std::string interpret_emotion_SVM(int res)
+{
+	if (res < 1)
+	{
+		return "You are happy ! :)";
+	} else if (res < 2)
+	{
+		return "You are angry :(";
+	} else if (res < 3)
+	{
+		return "You are afraid. :o";
+	} else if (res < 4)
+	{
+		return "Oh! You seem surprized!";
+	} else if (res < 5)
+	{
+		return "Oh, what happens? You seem sad. :(";
+	} else 
+	{
+		return "Ummm.. I don't understand your emotion, you are so unique!";
+	}
+}
+
 float test (pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, int classifier_version)
 {
 //CREATE HISTOGRAM
@@ -76,7 +99,7 @@ class SimpleOpenNIViewer
     		//pcl::PointCloud<pcl::PointXYZ>::Ptr ptr_cloud(&cloud2);
 				std::cout << "Guessing your emotion using SVM..." << std::endl;
 		  	float res = test(cloud2, 1);
-				std::cout << res << std::endl;
+				std::cout << res << " : " << interpret_emotion_SVM(res) << std::endl;
     	} else if (use_method == 2)
     	{
     		pcl::PointCloud<pcl::PointXYZ>::Ptr cloud2 (new pcl::PointCloud<pcl::PointXYZ>);
@@ -85,7 +108,7 @@ class SimpleOpenNIViewer
     		//pcl::PointCloud<pcl::PointXYZ>::Ptr ptr_cloud(&cloud2);
 				std::cout << "Guessing your emotion using RTree..." << std::endl;
 		  	float res = test(cloud2, 0);
-				std::cout << res << std::endl;
+				std::cout << res << " : " << interpret_emotion_SVM(res) << std::endl;
     	}
 			use_method = 0;
     }
