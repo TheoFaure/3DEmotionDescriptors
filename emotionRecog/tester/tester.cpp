@@ -1,15 +1,13 @@
+#include <pcl/io/openni_grabber.h>
+#include <pcl/visualization/cloud_viewer.h>
+#include <pcl/visualization/pcl_visualizer.h>
+
+#include <pcl/io/pcd_io.h>
 #include "../common.hpp"
 
-float test (std::string file_name, int classifier_version)
+float test (pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, int classifier_version)
 {
 //CREATE HISTOGRAM
-
-	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
-  if (pcl::io::loadPCDFile<pcl::PointXYZ> (file_name, *cloud) == -1) //* load the file
-  {
-    PCL_ERROR ("Couldn't read file\n");
-    return 0.0;
-  }
 
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered (new pcl::PointCloud<pcl::PointXYZ>);
 	filter_file(cloud, cloud_filtered);
@@ -57,40 +55,86 @@ float test (std::string file_name, int classifier_version)
 	}
 }
 
-
-int main (int argc, char** argv)
+class SimpleOpenNIViewer
 {
-	int classifier_version = 1;
-	if (argc >= 3)
-	{
-		std::istringstream buffer(argv[2]);
-		buffer >> classifier_version;
-	}
-	if (argc >= 2)
-	{
-		std::string file_name = argv[1];
-		float res = test(file_name, classifier_version);
-		std::cout << res << std::endl;
-	} else
-	{
-		std::vector<int> nb_images = get_number_images();
-		for (int i = 0 ; i < nb_images.size() ; i++)
+  public:
+    SimpleOpenNIViewer () : viewer ("PCL OpenNI Viewer"), use_method(0) {}
+
+		void cloud_cb_ (const pcl::PointCloud<pcl::PointXYZRGBA>::ConstPtr &cloud)
+    {
+      if (!viewer.wasStopped())
+        viewer.showCloud (cloud);
+    }
+		
+		void test_cloud_ (const pcl::PointCloud<pcl::PointXYZ>::ConstPtr &cloud)
+    {
+    	if (use_method == 1)
+    	{
+    		pcl::PointCloud<pcl::PointXYZ>::Ptr cloud2 (new pcl::PointCloud<pcl::PointXYZ>);
+    		*cloud2 += *cloud;
+    	  //pcl::PointCloud<pcl::PointXYZ> cloud2(*cloud);
+    		//pcl::PointCloud<pcl::PointXYZ>::Ptr ptr_cloud(&cloud2);
+				std::cout << "Guessing your emotion using SVM..." << std::endl;
+		  	float res = test(cloud2, 1);
+				std::cout << res << std::endl;
+    	} else if (use_method == 2)
+    	{
+    		pcl::PointCloud<pcl::PointXYZ>::Ptr cloud2 (new pcl::PointCloud<pcl::PointXYZ>);
+    		*cloud2 += *cloud;
+    	  //pcl::PointCloud<pcl::PointXYZ> cloud2(*cloud);
+    		//pcl::PointCloud<pcl::PointXYZ>::Ptr ptr_cloud(&cloud2);
+				std::cout << "Guessing your emotion using RTree..." << std::endl;
+		  	float res = test(cloud2, 0);
+				std::cout << res << std::endl;
+    	}
+			use_method = 0;
+    }
+    
+    void keyboardEventOccurred (const pcl::visualization::KeyboardEvent &event,
+		                        void* cookie)
 		{
-			std::vector<float> res;
-			for (int j = 1 ; j <= nb_images[i] ; j++)
+			if (event.getKeySym () == "s" && event.keyDown ())
 			{
-				std::string type(get_emotion_from_index(i));
-				std::string file(SSTR(j));
-				std::string file_name = ("/home/theo/Documents/3D/Projet/emotionRecog/data/images/" + type + "/" + file + ".pcd").c_str();
-				res.push_back(test(file_name, classifier_version));
-			}
-			std::cout << i << " (" << get_emotion_from_index(i) << "): ";
-			for (int j = 0 ; j < res.size() ; j++)
+				use_method = 1;
+			} else if (event.getKeySym () == "r" && event.keyDown ())
 			{
-				std::cout << res[j] << " ";
+				use_method = 2;
 			}
-			std::cout << endl;
 		}
-	}	
+    
+		void run ()
+		{
+			pcl::Grabber* interface = new pcl::OpenNIGrabber();
+
+			boost::function<void (const pcl::PointCloud<pcl::PointXYZRGBA>::ConstPtr&)> f = 
+				boost::bind (&SimpleOpenNIViewer::cloud_cb_, this, _1);
+			boost::function<void (const pcl::PointCloud<pcl::PointXYZ>::ConstPtr&)> f1 = 
+				boost::bind (&SimpleOpenNIViewer::test_cloud_, this, _1);
+    		
+			interface->registerCallback (f);
+			interface->registerCallback (f1);
+			
+			interface->start ();
+		  viewer.registerKeyboardCallback (&SimpleOpenNIViewer::keyboardEventOccurred, *this, NULL);
+			while (!viewer.wasStopped())
+			{
+				boost::this_thread::sleep (boost::posix_time::seconds (1));
+			}	
+			interface->stop ();
+		}
+
+		pcl::visualization::CloudViewer viewer;
+		int use_method;
+};
+
+int main ()
+{
+	std::cout << "Usage:\n"
+						<< "Press s to classify your face using SVM.\n"
+						<< "Press a to classify your face using RTree.\n";
+
+	SimpleOpenNIViewer v;
+	v.run ();
 	return 0;
 }
+
