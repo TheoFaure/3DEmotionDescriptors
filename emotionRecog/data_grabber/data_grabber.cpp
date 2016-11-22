@@ -55,7 +55,7 @@ class SimpleOpenNIViewer
     }
     
     void keyboardEventOccurred (const pcl::visualization::KeyboardEvent &event,
-		                        void* cloud_void)
+		                        void* cookie)
 		{
 			if (event.getKeySym () == "j" && event.keyDown ())
 			{

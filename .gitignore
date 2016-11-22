@@ -16,3 +16,9 @@ classifier/CMakeLists.txt~
 classifier/build/
 classifier/classifier.cpp~
 *~
+*/Debug
+*/build
+*/*/Debug
+*/*/build
+data/
+emotionRecog/trainer/model*

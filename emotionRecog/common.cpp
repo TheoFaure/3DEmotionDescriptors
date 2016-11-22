@@ -112,6 +112,11 @@ std::vector<int> get_number_images()
   else 
   {
   	std::cout << "Unable to open file";
+		nb_images.push_back(0);
+		nb_images.push_back(0);
+		nb_images.push_back(0);
+		nb_images.push_back(0);
+		nb_images.push_back(0);
   }
   return nb_images;
 }
