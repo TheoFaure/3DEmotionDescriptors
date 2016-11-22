@@ -65,16 +65,16 @@ float test (pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, int classifier_version)
 	{
 		cv::Ptr<cv::ml::RTrees> rtree = cv::ml::StatModel::load<cv::ml::RTrees>("/home/theo/Documents/3D/Projet/emotionRecog/trainer/model_RTree");
 		cv::Mat res;   // output
-		rtree->predict(histogram, res);
-	
-		return res.at<float>(0, 0);
+		float res2 = rtree->predict(histogram);
+		return res2;	
+		//return res.at<float>(0, 0);
 	} else
 	{
 		cv::Ptr<cv::ml::SVM> svm = cv::ml::StatModel::load<cv::ml::SVM>("/home/theo/Documents/3D/Projet/emotionRecog/trainer/model_SVM");
 		cv::Mat res;   // output
-		svm->predict(histogram, res);
-	
-		return res.at<float>(0, 0);
+		float res2 = svm->predict(histogram);
+		return res2;	
+		//return res.at<float>(0, 0);
 	}
 }
 

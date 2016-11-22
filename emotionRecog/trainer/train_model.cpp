@@ -64,7 +64,7 @@ int process_images_emotion(int emotion_index, int nb_images,cv::Mat * histograms
 		//Preprocessing
 		std::string type(get_emotion_from_index(emotion_index));
 		std::string file(SSTR(i));
-		if (file_exists(("/home/theo/Documents/3D/Projet/emotionRecog/data/histograms/" + type + "/" + file + ".txt").c_str()))
+		if (!file_exists(("/home/theo/Documents/3D/Projet/emotionRecog/data/histograms/" + type + "/" + file + ".txt").c_str()))
 		{
 			pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
 			if (read_file(emotion_index, i, cloud) == -1)
@@ -82,6 +82,32 @@ int process_images_emotion(int emotion_index, int nb_images,cv::Mat * histograms
 		
 			write_histogram_on_file(emotion_index, i, vfhs);
 			add_histogram(histograms, vfhs);
+		} else
+		{
+			std::string line;
+			std::ifstream myfile (SSTR("/home/theo/Documents/3D/Projet/emotionRecog/data/histograms/" + type + "/" + file + ".txt").c_str());
+			if (myfile.is_open())
+			{
+				if ( std::getline (myfile,line) )
+				{
+					std::string histogram_str = line.substr(1, histogram_str.size() - 2);
+					std::vector<std::string> histogram_vector = split(histogram_str, ',');
+					cv::Mat histogram = cv::Mat::zeros(1, 308, CV_32FC1);
+					for (int j = 0 ; j < 308 ; j++)
+					{
+						std::istringstream buffer(histogram_vector[j]);
+						int temp;
+						buffer >> temp;
+						histogram.at<float>(0, j) = temp;
+					}
+					std::cout << "Data in the file: " << histogram.size[0] << " " << histogram.size[1] << endl;
+					histograms->push_back(histogram);
+				}
+				myfile.close();
+			} else
+			{
+				return -1;
+			}
 		}
 	}
 	return 0;
@@ -90,7 +116,7 @@ int process_images_emotion(int emotion_index, int nb_images,cv::Mat * histograms
 cv::Mat create_labels(std::vector<int> nb_images)
 {
 	int nb_total = nb_images[0] + nb_images[1] + nb_images[2] + nb_images[3] + nb_images[4];
-	cv::Mat labels = cv::Mat::zeros(1, nb_total, CV_32SC1);
+	cv::Mat labels = cv::Mat::zeros(nb_total, 1, CV_32SC1);
 	//Tristeza = 0, Allegria = 1, Miedo = 2, Sorpresa = 3, Colera = 4
   for (int i = 0 ; i < nb_total ; i++)
   {
@@ -125,6 +151,8 @@ void create_SVM(cv::Mat* histograms, cv::Mat* labels, int kfold)
 	svm->setKernel(cv::ml::SVM::LINEAR);
 	svm->setTermCriteria(cv::TermCriteria(cv::TermCriteria::MAX_ITER, 100, 1e-6));
 
+	std::cout << "Data in the hisogram: " << histograms->size[0] << " " << histograms->size[1] << endl;
+	
 	// Train the SVM
   cv::Ptr<cv::ml::TrainData> td = cv::ml::TrainData::create(*histograms, cv::ml::ROW_SAMPLE, *labels);
 	svm->train(td);
@@ -156,7 +184,10 @@ int
 	{
 		std::cout << "Processing emotion " << i << "..." << std::endl;
 		if (process_images_emotion(i, nb_images[i], &histograms) == -1)
-		{ return (-1); }	
+		{ 
+			std::cout << "Uuuuch, bug!" << std::endl;
+			return (-1);
+		}	
 	}
 	std::cout << "All emotions processed." << std::endl;
 	
