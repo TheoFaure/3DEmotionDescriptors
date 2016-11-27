@@ -49,6 +49,14 @@ class SimpleOpenNIViewer
       {
    			std::cout << "Photo taken for sadness" << std::endl;
 				pcl::io::savePCDFile( file_name, *cloud, true ); // Binary format
+      } else if (take_photo == 6)
+      {
+   			std::cout << "Photo taken for 2_classes_sadness" << std::endl;
+				pcl::io::savePCDFile( file_name, *cloud, true ); // Binary format
+      } else if (take_photo == 7)
+      {
+   			std::cout << "Photo taken for 2_classes_happiness" << std::endl;
+				pcl::io::savePCDFile( file_name, *cloud, true ); // Binary format
       }
 			nb_images[take_photo-1]++;
       take_photo = 0;
@@ -72,6 +80,12 @@ class SimpleOpenNIViewer
 			} else if (event.getKeySym () == "t" && event.keyDown ())
 			{
 				take_photo = 5;
+			} else if (event.getKeySym () == "i" && event.keyDown ())
+			{
+				take_photo = 6;
+			} else if (event.getKeySym () == "o" && event.keyDown ())
+			{
+				take_photo = 7;
 			}
 		}
     
@@ -98,7 +112,8 @@ class SimpleOpenNIViewer
 			std::ofstream out_file("/home/theo/Documents/3D/Projet/emotionRecog/data/images/nb_images.txt");
 			if (out_file.is_open())
 			{
-				out_file << nb_images[0] << "\n" << nb_images[1] << "\n" << nb_images[2] << "\n" << nb_images[3] << "\n" << nb_images[4];
+				out_file << nb_images[0] << "\n" << nb_images[1] << "\n" << nb_images[2] << "\n" << nb_images[3] << "\n" << nb_images[4]
+								 << "\n" << nb_images[5] << "\n" << nb_images[6];
 				out_file.close();
 			}
 		}
@@ -115,7 +130,9 @@ int main ()
 						<< "Press a to take a photo of anger.\n"
 						<< "Press f to take a photo of fear.\n"
 						<< "Press s to take a photo of surprise.\n"
-						<< "Press t to take a photo of sadness.\n";
+						<< "Press t to take a photo of sadness.\n"
+						<< "Press i to take a photo of 2_classes_sadness.\n"
+						<< "Press o to take a photo of 2_classes_happiness.\n";
 
 	SimpleOpenNIViewer v;
 	v.run ();

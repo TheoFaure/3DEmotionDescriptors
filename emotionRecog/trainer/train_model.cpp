@@ -166,7 +166,7 @@ void create_SVM(cv::Mat* histograms, cv::Mat* labels, int kfold)
 	cv::Ptr<cv::ml::TrainData> train_data = cv::ml::TrainData::create(*histograms, cv::ml::ROW_SAMPLE, *labels);
 	
 	svm->trainAuto(train_data, kfold, cv::ml::SVM::getDefaultGrid(cv::ml::SVM::C), cv::ml::SVM::getDefaultGrid(cv::ml::SVM::GAMMA), cv::ml::SVM::getDefaultGrid(cv::ml::SVM::P), cv::ml::SVM::getDefaultGrid(cv::ml::SVM::NU), cv::ml::SVM::getDefaultGrid(cv::ml::SVM::COEF), cv::ml::SVM::getDefaultGrid(cv::ml::SVM::DEGREE), false);
-	*/
+*/
 	svm->save("../model_SVM");
 }
 

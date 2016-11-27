@@ -1,10 +1,10 @@
 #include "common.hpp"
 
-void find_point_z(double value, pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, pcl::PointXYZ * out_point)
+void find_point_y(double value, pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, pcl::PointXYZ * out_point)
 {
   for (int i = 0 ; i < cloud->points.size() ; i++)
   {
-    if (cloud->points[i].z == value)
+    if (cloud->points[i].y == value)
     {
       out_point->x = cloud->points[i].x;
       out_point->y = cloud->points[i].y;
@@ -17,33 +17,32 @@ void find_point_z(double value, pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, pcl::
 void filter_file(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered)
 {
   //filter that keeps only me  
-  pcl::PassThrough<pcl::PointXYZ> pass;
+  pcl::PassThrough<pcl::PointXYZRGBA> pass;
   pass.setInputCloud (cloud);
   pass.setFilterFieldName ("z");
   pass.setFilterLimits (0.0, 1.0);
   pass.filter (*cloud_filtered);
 
-	//get the nose (considered as the closest point to the camera)
-  pcl::PointXYZ minPt, maxPt;
-  pcl::getMinMax3D (*cloud_filtered, minPt, maxPt);
-
-  pcl::PointXYZ nose;
-  find_point_z(minPt.z, cloud_filtered, &nose);
-  
-  //filter the region below the nose
-  pass.setInputCloud (cloud);
-  pass.setFilterFieldName ("z");
-  pass.setFilterLimits (nose.z-0.1, nose.z+0.1);
-  pass.filter (*cloud_filtered);
-
-  pass.setInputCloud (cloud_filtered);
-  pass.setFilterFieldName ("x");
-  pass.setFilterLimits (nose.x-0.07, nose.x+0.07);
-  pass.filter (*cloud_filtered);
-
+	// remove shoulder...
   pass.setInputCloud (cloud_filtered);
   pass.setFilterFieldName ("y");
-  pass.setFilterLimits (nose.y-0.1, nose.y+0.045);
+  pass.setFilterLimits (-0.7, 0.16);
+  pass.filter (*cloud_filtered);
+
+  pcl::PointXYZRGBA minPt, maxPt;
+  pcl::getMinMax3D (*cloud_filtered, minPt, maxPt);
+  std::cout << maxPt.x << std::endl;
+  std::cout << maxPt.y << std::endl;
+  std::cout << maxPt.z << std::endl;
+  
+  pcl::PointXYZRGBA nose;
+  find_point_y(minPt.y, cloud_filtered, &nose);
+  
+  std::cout << "nose : " << nose.x << " , " << nose.y << " , " << nose.z << std::endl;
+  
+  pass.setInputCloud (cloud_filtered);
+  pass.setFilterFieldName ("y");
+  pass.setFilterLimits (nose.y+0.14, nose.y+0.25);
   pass.filter (*cloud_filtered);
 }
 
@@ -117,6 +116,8 @@ std::vector<int> get_number_images()
 		nb_images.push_back(0);
 		nb_images.push_back(0);
 		nb_images.push_back(0);
+		nb_images.push_back(0);
+		nb_images.push_back(0);
   }
   return nb_images;
 }
@@ -135,6 +136,10 @@ std::string get_emotion_from_index(int index)
 			return "sorpresa";
 		case 4:
 			return "tristeza";
+		case 5:
+			return "2_sad";
+		case 6:
+			return "2_joyful";
 		default:
 			return "error";
 	}
