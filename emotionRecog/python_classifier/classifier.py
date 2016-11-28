@@ -7,6 +7,8 @@ from sklearn.cross_validation import train_test_split
 from sklearn.cross_validation import ShuffleSplit
 from sklearn.grid_search import GridSearchCV
 from sklearn.learning_curve import learning_curve
+import pickle
+from sklearn.externals import joblib
 
 
 def plot_learning_curve(estimator, title, X, y, ylim=None, cv=None,
@@ -43,7 +45,7 @@ def SVM_classifier(X, y):
 	X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
 
 	estimator = SVC(kernel='linear')
-
+	
 	cv = ShuffleSplit(X_train.shape[0], n_iter=10, test_size=0.2, random_state=0)
 
 	gammas = np.logspace(-6, -1, 10)
@@ -54,9 +56,10 @@ def SVM_classifier(X, y):
 	estimator = SVC(kernel='linear', gamma=classifier.best_estimator_.gamma)
 	plot_learning_curve(estimator, title, X_train, y_train, cv=cv)
 	plt.show()
-
-
+	
 	print(classifier.score(X_test, y_test))
+	classifier.fit(X, y)
+	joblib.dump(classifier, 'svm_model.pkl', compress=9)
 
 
 def RF_classifier(X, y):
@@ -87,35 +90,61 @@ def RF_classifier(X, y):
 	plt.show()
 
 	print(classifier.score(X_test, y_test))
+	classifier.fit(X, y)
+	joblib.dump(classifier, 'rf_model.pkl', compress=9)
 
+def add_images(X, y, nb_images, directory_name, label):
+	for image in range(1, nb_images+1):
+		histo = []
+		file_name = "/home/theo/Documents/3D/Projet/emotionRecog/data/histograms/" + directory_name + "/" + str(image) + ".txt"
+		with open(file_name, 'r') as f:
+			line = f.read()
+			line = line.split("(")
+			line = line[1].split(")")[0]
+			histo = [float(i) for i in line.split(", ")]
+			X.append(histo)
+			y.append(label)
+		f.close()
+	
+	return X, y
 
 
 if __name__ == "__main__":
 	X = []
 	y = []
-	for image in range(1, 94):
-		histo = []
-		file_name = "/home/theo/Documents/3D/Projet/emotionRecog/data/histograms/2_sad/" + str(image) + ".txt"
-		with open(file_name, 'r') as f:
-			line = f.read()
-			line = line.split("(")
-			line = line[1].split(")")[0]
-			histo = [float(i) for i in line.split(", ")]
-			X.append(histo)
-			y.append(0)
-		f.close()
+	method = "2_classes"
+	
+	if method == "2_classes":
+		for image in range(1, 94):
+			histo = []
+			file_name = "/home/theo/Documents/3D/Projet/emotionRecog/data/histograms/2_sad/" + str(image) + ".txt"
+			with open(file_name, 'r') as f:
+				line = f.read()
+				line = line.split("(")
+				line = line[1].split(")")[0]
+				histo = [float(i) for i in line.split(", ")]
+				X.append(histo)
+				y.append(0)
+			f.close()
 		
-	for image in range(1, 123):
-		histo = []
-		file_name = "/home/theo/Documents/3D/Projet/emotionRecog/data/histograms/2_joyful/" + str(image) + ".txt"
-		with open(file_name, 'r') as f:
-			line = f.read()
-			line = line.split("(")
-			line = line[1].split(")")[0]
-			histo = [float(i) for i in line.split(", ")]
-			X.append(histo)
-			y.append(1)
-		f.close()
+		for image in range(1, 123):
+			histo = []
+			file_name = "/home/theo/Documents/3D/Projet/emotionRecog/data/histograms/2_joyful/" + str(image) + ".txt"
+			with open(file_name, 'r') as f:
+				line = f.read()
+				line = line.split("(")
+				line = line[1].split(")")[0]
+				histo = [float(i) for i in line.split(", ")]
+				X.append(histo)
+				y.append(1)
+			f.close()
+	else:
+		X, y = add_images(X, y, 35, "allegria", 0)		
+		X, y = add_images(X, y, 47, "colera", 1)
+		X, y = add_images(X, y, 35, "miedo", 2)
+		X, y = add_images(X, y, 37, "sorpresa", 3)
+		X, y = add_images(X, y, 29, "tristeza", 4)
+
 	X = np.array(X)
 	y = np.array(y)
 	

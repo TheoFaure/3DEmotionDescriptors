@@ -113,7 +113,7 @@ int process_images_emotion(int emotion_index, int nb_images,cv::Mat * histograms
 	return 0;
 }
 
-cv::Mat create_labels(std::vector<int> nb_images)
+cv::Mat create_labels_5(std::vector<int> nb_images)
 {
 	int nb_total = nb_images[0] + nb_images[1] + nb_images[2] + nb_images[3] + nb_images[4];
 	cv::Mat labels = cv::Mat::zeros(nb_total, 1, CV_32SC1);
@@ -130,6 +130,22 @@ cv::Mat create_labels(std::vector<int> nb_images)
 			labels.at<float>(0, i) = 3;
 		else
 			labels.at<float>(0, i) = 4;
+  }
+  
+  return labels;
+}
+
+cv::Mat create_labels_2(std::vector<int> nb_images)
+{
+	int nb_total = nb_images[5] + nb_images[6];
+	cv::Mat labels = cv::Mat::zeros(nb_total, 1, CV_32SC1);
+	//Sadness=0, Joy=1
+  for (int i = 0 ; i < nb_total ; i++)
+  {
+		if (i < nb_images[5])
+			labels.at<float>(0, i) = 0;
+		else
+			labels.at<float>(0, i) = 1;
   }
   
   return labels;
@@ -176,11 +192,11 @@ int
 //DATA PROCESSING
 	std::vector<int> nb_images = get_number_images();
 	std::cout << "Number of images:" << std::endl;
-	std::cout << nb_images[0] << " " << nb_images[1] << " " << nb_images[2] << " " << nb_images[3] << " " << nb_images[4] << " " << std::endl;
+	std::cout << nb_images[0] << " " << nb_images[1] << " " << nb_images[2] << " " << nb_images[3] << " " << nb_images[4] << " " << nb_images[5] << " " << nb_images[6] <<  std::endl;
 	cv::Mat histograms = cv::Mat::zeros(0, 308, CV_32FC1);
 	// for each emotion, process the images.
 	
-	for (int i = 0 ; i < nb_images.size() ; i++)
+	for (int i = 5 ; i < nb_images.size() ; i++)
 	{
 		std::cout << "Processing emotion " << i << "..." << std::endl;
 		if (process_images_emotion(i, nb_images[i], &histograms) == -1)
@@ -191,7 +207,7 @@ int
 	}
 	std::cout << "All emotions processed." << std::endl;
 	
-	cv::Mat labels = create_labels(nb_images);
+	cv::Mat labels = create_labels_2(nb_images);
 	
 //MODEL CREATION
 	

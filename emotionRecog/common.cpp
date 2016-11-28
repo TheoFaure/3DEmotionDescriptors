@@ -17,7 +17,7 @@ void find_point_y(double value, pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, pcl::
 void filter_file(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered)
 {
   //filter that keeps only me  
-  pcl::PassThrough<pcl::PointXYZRGBA> pass;
+  pcl::PassThrough<pcl::PointXYZ> pass;
   pass.setInputCloud (cloud);
   pass.setFilterFieldName ("z");
   pass.setFilterLimits (0.0, 1.0);
@@ -29,13 +29,13 @@ void filter_file(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, pcl::PointCloud<pcl:
   pass.setFilterLimits (-0.7, 0.16);
   pass.filter (*cloud_filtered);
 
-  pcl::PointXYZRGBA minPt, maxPt;
+  pcl::PointXYZ minPt, maxPt;
   pcl::getMinMax3D (*cloud_filtered, minPt, maxPt);
   std::cout << maxPt.x << std::endl;
   std::cout << maxPt.y << std::endl;
   std::cout << maxPt.z << std::endl;
   
-  pcl::PointXYZRGBA nose;
+  pcl::PointXYZ nose;
   find_point_y(minPt.y, cloud_filtered, &nose);
   
   std::cout << "nose : " << nose.x << " , " << nose.y << " , " << nose.z << std::endl;
